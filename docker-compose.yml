@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+      target: local
+    tty: true
+    stdin_open: true
+    command: "air -c .air.toml"
+    volumes:
+      - .:/go/src/github.com/Sakamoto0525/k8s-go-prologue
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks:
+        - prologue-network
+
+  db:
+    build:
+        context: .
+        dockerfile: ./docker/mysql/Dockerfile
+        target: local
+    environment:
+        - MYSQL_DATABASE=prologue
+        - MYSQL_ROOT_PASSWORD=password
+        - TZ=Asia/Tokyo
+    volumes:
+        - ./mysql/init:/docker-entrypoint-initdb.d
+        - ./mysql/data:/var/lib/mysql
+    ports:
+        - "3306:3306"
+    networks:
+        - prologue-network
+
+networks: 
+  prologue-network:
+    external:
+      name: prologue-network
